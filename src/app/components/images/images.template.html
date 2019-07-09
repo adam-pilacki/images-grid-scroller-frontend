@@ -1,0 +1,45 @@
+<section class="images-grid">
+  <div id="images-container">
+    <div
+      layout="column"
+      layout-align="center center"
+      ng-repeat="rowWithImages in $ctrl.imagesRows track by $index"
+    >
+      <div layout="row">
+        <div
+          ng-repeat="image in rowWithImages track by $index"
+          class="image-box"
+          ng-style="{ 'width': $ctrl.imageBoxDimensions.imgWidth + 'px', 'height': ($ctrl.imageBoxDimensions.boxHeight) + 'px'}"
+        >
+          <md-tooltip md-direction="top">
+            {{ image.title }}
+          </md-tooltip>
+          <img
+            src="{{ image.image }}"
+            width="{{ $ctrl.imageBoxDimensions.imgWidth }}"
+            height="{{ $ctrl.imageBoxDimensions.imgHeight }}"
+          />
+          <p class="title">{{ image.description }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div layout="row" layout-align="center center">
+    <md-button
+      class="md-primary"
+      ng-if="!$ctrl.isLoading && $ctrl.next > $ctrl.currentOffset"
+      >Load more...</md-button
+    >
+  </div>
+
+  <div class="loading-bottom" ng-if="$ctrl.isLoading">
+    <div layout="row" layout-align="center center" class="pad-10">
+      <md-progress-circular
+        md-diameter="32"
+        md-mode="indeterminate"
+      ></md-progress-circular>
+      &nbsp; Loading more images...
+    </div>
+  </div>
+</section>
