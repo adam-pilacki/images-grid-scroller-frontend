@@ -12,20 +12,15 @@ class ImagesController {
 
     this.isLoading = true;
 
-    this.triggerLoadImages = (rebuildImagesRows = false) => {
+    this.triggerLoadImages = () => {
       if (!this.getImagesContainer()) {
         return this.triggerLoadImagesDebounced();
       }
 
       this.setLimits();
 
-      if (rebuildImagesRows) {
-        this.rebuildImagesRows();
-      }
-
       if (this.next === 0 || this.next > this.currentOffset) {
         this.loadImages(this.offsetLimit);
-        this.isLoading = true;
       }
     };
 
@@ -36,11 +31,6 @@ class ImagesController {
 
     this.triggerLoadImagesDebounced = this.debounce(
       this.triggerLoadImages,
-      200
-    );
-
-    this.triggerLoadImagesWithReuildDebounced = this.debounce(
-      () => this.triggerLoadImages(true),
       200
     );
 
@@ -57,7 +47,7 @@ class ImagesController {
   addEventListeners() {
     this.$window.addEventListener(
       'resize',
-      this.triggerLoadImagesWithReuildDebounced
+      this.triggerLoadImagesDebounced
     );
     this.$window.addEventListener('scroll', this.scrollListener);
     this.$window.addEventListener('mousewheel', this.mousewheelListener);
@@ -66,14 +56,14 @@ class ImagesController {
   removeEventListeners() {
     this.$window.removeEventListener(
       'resize',
-      this.triggerLoadImagesWithReuildDebounced
+      this.triggerLoadImagesDebounced
     );
     this.$window.removeEventListener('scroll', this.scrollListener);
     this.$window.removeEventListener('mousewheel', this.mousewheelListener);
   }
 
   scrollListener() {
-    if (!this.imagesRows.length || !this.next || this.isLoading) {
+    if (!this.imagesData.length || !this.next || this.isLoading) {
       return;
     }
 
@@ -102,10 +92,10 @@ class ImagesController {
     }
   }
 
-  getLimit(secondCall = false) {
+  getLimit() {
     const imagesPerRow = this.getImagesPerRow();
     const rowsPerView = this.getVisibleRowsMaxNumber();
-    return Math.ceil(imagesPerRow * rowsPerView * (secondCall ? 0.7 : 0.9));
+    return Math.ceil(imagesPerRow * rowsPerView);
   }
 
   loadImages(limit = this.offsetLimit) {
@@ -124,7 +114,7 @@ class ImagesController {
           this.next = res.next;
         }
 
-        this.addImagesToRows(res.results);
+        this.imagesData = [...this.imagesData, ...res.results];
 
         this.isLoading = false;
 
@@ -137,51 +127,11 @@ class ImagesController {
   }
 
   resetPagination() {
-    this.imagesRows = [];
+    this.imagesData = [];
     this.currentOffset = 0;
     this.next = 0;
 
     this.setLimits();
-  }
-
-  /**
-   * Rebuild the imagesRows buffer according to the current screen size
-   * Truncate buffer (memory, performance)
-   */
-  rebuildImagesRows() {
-    const flatImages = [];
-
-    this.imagesRows.forEach(rowWithImages => {
-      rowWithImages.forEach(image => {
-        if (flatImages.length < 550) {
-          flatImages.push(image);
-        }
-      });
-    });
-
-    this.currentOffset = flatImages.length;
-    this.next = flatImages.length + 1;
-
-    this.imagesRows = [];
-
-    this.addImagesToRows(flatImages);
-  }
-
-  addImagesToRows(imagesToAdd) {
-    if (!this.imagesPerRow) {
-      return;
-    }
-
-    let row = [];
-
-    for (let i = 1; i <= imagesToAdd.length; i++) {
-      row = [...row, imagesToAdd[i - 1]];
-
-      if (i % this.imagesPerRow === 0) {
-        this.imagesRows = [...this.imagesRows, row];
-        row = [];
-      }
-    }
   }
 
   getImagesContainer() {
@@ -195,7 +145,7 @@ class ImagesController {
       return 0;
     }
     return Math.floor(
-      imagesContainer.offsetWidth / (this.imageBoxDimensions.imgWidth + 60)
+      this.imagesContainerMaxWidth / (this.imageBoxDimensions.imgWidth + 60)
     );
   }
 
@@ -206,8 +156,8 @@ class ImagesController {
   }
 
   setLimits() {
+    this.imagesContainerMaxWidth = this.$window.screen.width - 100;
     this.offsetLimit = this.getLimit();
-    this.imagesPerRow = this.getImagesPerRow();
   }
 }
 

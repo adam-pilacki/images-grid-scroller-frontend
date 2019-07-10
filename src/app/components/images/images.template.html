@@ -1,26 +1,20 @@
 <section class="images-grid">
   <div id="images-container">
-    <div
-      layout="column"
-      layout-align="center center"
-      ng-repeat="rowWithImages in $ctrl.imagesRows track by $index"
-    >
-      <div layout="row">
-        <div
-          ng-repeat="image in rowWithImages track by $index"
+    <div layout="row" layout-wrap ng-style="{'max-width': this.imagesContainerMaxWidth + 'px'}">
+      <div
+          ng-repeat="image in $ctrl.imagesData track by $index"
           class="image-box"
           ng-style="{ 'width': $ctrl.imageBoxDimensions.imgWidth + 'px', 'height': ($ctrl.imageBoxDimensions.boxHeight) + 'px'}"
-        >
-          <md-tooltip md-direction="top">
-            {{ image.title }}
-          </md-tooltip>
-          <img
+      >
+        <md-tooltip md-direction="top">
+          {{ image.title }}
+        </md-tooltip>
+        <img
             src="{{ image.image }}"
             width="{{ $ctrl.imageBoxDimensions.imgWidth }}"
             height="{{ $ctrl.imageBoxDimensions.imgHeight }}"
-          />
-          <p class="title">{{ image.description }}</p>
-        </div>
+        />
+        <p class="title">{{ image.description }}</p>
       </div>
     </div>
   </div>
@@ -29,6 +23,7 @@
     <md-button
       class="md-primary"
       ng-if="!$ctrl.isLoading && $ctrl.next > $ctrl.currentOffset"
+      ng-click="$ctrl.triggerLoadImagesDebounced()"
       >Load more...</md-button
     >
   </div>
